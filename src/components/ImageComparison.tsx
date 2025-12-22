@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, MouseEvent, TouchEvent } from 'react';
+import { useState, useRef, MouseEvent, TouchEvent, useEffect } from 'react';
 import { downloadImage } from '@/lib/api';
 
 interface ImageComparisonProps {
@@ -9,6 +9,7 @@ interface ImageComparisonProps {
   fileName: string;
   onReset: () => void;
   onReprocess: () => void;
+  onScrollComplete?: () => void;
 }
 
 export default function ImageComparison({
@@ -17,11 +18,38 @@ export default function ImageComparison({
   fileName,
   onReset,
   onReprocess,
+  onScrollComplete,
 }: ImageComparisonProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [viewMode, setViewMode] = useState<'slider' | 'side-by-side'>('slider');
   const containerRef = useRef<HTMLDivElement>(null);
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll to view on mount
+  useEffect(() => {
+    if (componentRef.current) {
+      // Calculate position with 20px offset
+      const element = componentRef.current;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - 20;
+
+      // Smooth scroll
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Trigger callback after animation (approx 500ms)
+      const timer = setTimeout(() => {
+        if (onScrollComplete) {
+          onScrollComplete();
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [onScrollComplete]);
 
   const handleMouseDown = () => {
     setIsDragging(true);
@@ -64,7 +92,7 @@ export default function ImageComparison({
   };
 
   return (
-    <div className="space-y-6">
+    <div ref={componentRef} className="space-y-6 scroll-mt-20">
       {/* View Mode Toggle */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold text-base-content">处理结果</h3>
