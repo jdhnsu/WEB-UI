@@ -92,19 +92,6 @@ export default function ProcessingStatus({
                   <span className="loading loading-spinner loading-lg text-primary"></span>
                 </div>
               </div>
-
-              {/* Add keyframes style */}
-              <style jsx>{`
-                @keyframes float {
-                  0%, 100% { transform: translateY(0); }
-                  50% { transform: translateY(-10px); }
-                }
-                @keyframes scan {
-                  0% { transform: translateX(-100%); opacity: 0; }
-                  50% { opacity: 1; }
-                  100% { transform: translateX(100%); opacity: 0; }
-                }
-              `}</style>
             </div>
           ) : (
             <div className="alert alert-warning shadow-lg">
