@@ -91,7 +91,7 @@ export default function ServiceSelector({
           }`}
       >
         <h2 
-          className={`text-2xl font-bold text-base-content transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          className={`text-2xl font-bold text-base-content transition-all duration-300 bg-base-100/50 backdrop-blur-md ease-[cubic-bezier(0.4,0,0.2,1)]
             ${isHeaderSticky ? 'scale-90 origin-left opacity-90' : 'scale-100 opacity-100'}
           `}
         >
