@@ -3,7 +3,7 @@ import './globals.css';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export const metadata: Metadata = {
-  title: 'AI Image Processing Tool',
+  title: '智绘-CleanShot',
   description: 'AI-powered document processing, matting, and watermark removal service',
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
             <div className="container mx-auto">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-base-content">
-                  AI Image Processing
+                  智绘-CleanShot
                 </h1>
               </div>
               <div className="flex-none">
@@ -39,7 +39,7 @@ export default function RootLayout({
           <footer className="footer footer-center p-4 bg-base-200 text-base-content mt-12">
             <div>
               <p>
-                Powered by AI Image Processing Service | Built with Next.js & daisyUI
+                Powered by 智绘-CleanShot Service | Chengdu Neusoft University
               </p>
             </div>
           </footer>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ProcessingStatus as Status } from '@/types';
 
 interface ProcessingStatusProps {
@@ -7,6 +8,7 @@ interface ProcessingStatusProps {
   error: string | null;
   onRetry?: () => void;
   serviceName?: string;
+  processingImage?: string;
 }
 
 export default function ProcessingStatus({
@@ -14,7 +16,18 @@ export default function ProcessingStatus({
   error,
   onRetry,
   serviceName,
+  processingImage,
 }: ProcessingStatusProps) {
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  useEffect(() => {
+    if (status === 'processing') {
+      setShowOverlay(true);
+      const timer = setTimeout(() => setShowOverlay(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   if (status === 'idle') {
     return null;
   }
@@ -46,18 +59,61 @@ export default function ProcessingStatus({
 
   if (status === 'processing') {
     return (
-      <div className="alert alert-warning shadow-lg">
-        <div>
-          <span className="loading loading-spinner loading-md"></span>
-          <div>
-            <h3 className="font-bold">AI 处理中...</h3>
-            <div className="text-xs">
-              {serviceName ? `使用 ${serviceName} 处理图片` : '正在处理您的图片，这可能需要几秒钟'}
+      <div className="card bg-base-200 shadow-xl w-full">
+        <div className="card-body items-center text-center space-y-6">
+          {processingImage ? (
+            <div className="relative group">
+              <div 
+                className="rounded-box overflow-hidden bg-base-300 max-w-md transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:shadow-2xl hover:-translate-y-2 will-change-transform"
+                style={{
+                  animation: 'float 3s ease-in-out infinite'
+                }}
+              >
+                <img
+                  src={processingImage}
+                  alt="Processing"
+                  className="max-w-full opacity-50"
+                />
+                
+                {/* Floating overlay animation */}
+                {showOverlay && (
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none will-change-opacity"
+                    style={{
+                      animation: 'scan 0.8s ease-in-out forwards',
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+              
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-base-100/90 rounded-box p-8 shadow-xl">
+                  <span className="loading loading-spinner loading-lg text-primary"></span>
+                </div>
+              </div>
             </div>
+          ) : (
+            <div className="alert alert-warning shadow-lg">
+              <div>
+                <span className="loading loading-spinner loading-md"></span>
+                <div>
+                  <h3 className="font-bold">AI 处理中...</h3>
+                  <div className="text-xs">
+                    {serviceName ? `使用 ${serviceName} 处理图片` : '正在处理您的图片，这可能需要几秒钟'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <h3 className="text-xl font-bold mb-2">AI 正在处理您的图片</h3>
+            <p className="text-base-content/60">
+              {serviceName ? `${serviceName} - ` : ''}这可能需要几秒钟...
+            </p>
+            <progress className="progress progress-primary w-64 mt-4"></progress>
           </div>
-        </div>
-        <div className="flex-none">
-          <progress className="progress progress-warning w-32"></progress>
         </div>
       </div>
     );

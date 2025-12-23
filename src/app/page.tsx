@@ -1,359 +1,236 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import ServiceSelector from '@/components/ServiceSelector';
-import FileUpload from '@/components/FileUpload';
-import ImageComparison from '@/components/ImageComparison';
-import ProcessingStatus from '@/components/ProcessingStatus';
-import { ServicesResponse, ProcessingStatus as Status } from '@/types';
-import { getServices, processImage, fileToBase64, checkHealth } from '@/lib/api';
+import Link from 'next/link';
+import Image from 'next/image';
+import CompetitorComparison from '@/components/CompetitorComparison';
 
-export default function HomePage() {
-  // Services state
-  const [services, setServices] = useState<ServicesResponse | null>(null);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [serviceHealth, setServiceHealth] = useState<boolean | null>(null);
+export default function Home() {
+  const latestResults = [
+    // {
+    //   id: 1,
+    //   title: "高精度人像抠图算法更新",
+    //   date: "2024-05-20",
+    //   description: "实验室最新发布的Portrait Matting v3.0模型，在复杂背景下的发丝级分割精度提升了15%。"
+    // },
+    // {
+    //   id: 2,
+    //   title: "文档去阴影技术突破",
+    //   date: "2024-05-15",
+    //   description: "提出了一种基于深度学习的光照矫正网络，有效解决了弯曲文档的阴影去除问题。"
+    // },
+    // {
+    //   id: 3,
+    //   title: "自然场景水印去除新进展",
+    //   date: "2024-05-10",
+    //   description: "针对半透明水印的盲去除任务，我们的新算法在PSNR指标上达到了业界领先水平。"
+    // }
+  ];
 
-  // Upload state
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [processedImage, setProcessedImage] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
-
-  // Processing state
-  const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState<string | null>(null);
-
-  // Check service health on mount
-  useEffect(() => {
-    const checkServiceHealth = async () => {
-      try {
-        const health = await checkHealth();
-        setServiceHealth(health.status === 'healthy' && health.pipelines_loaded > 0);
-      } catch (err) {
-        setServiceHealth(false);
-        setError('无法连接到 AI 服务。请确保后端服务运行在 http://localhost:5000');
-      }
-    };
-
-    checkServiceHealth();
-  }, []);
-
-  // Fetch available services
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const servicesData = await getServices();
-        setServices(servicesData);
-      } catch (err) {
-        setError('无法加载服务列表。请检查 API 服务是否正在运行。');
-      }
-    };
-
-    if (serviceHealth) {
-      fetchServices();
-    }
-  }, [serviceHealth]);
-
-  // Handle service selection
-  const handleServiceSelect = (serviceId: string) => {
-    setSelectedService(serviceId);
-    setError(null);
-
-    // If we have an image and a service, auto-process or show prompt
-    if (originalImage && serviceId && !processedImage) {
-      // Optionally auto-process here, or just wait for user action
-    }
-  };
-
-  // Handle file selection and auto-process
-  const handleFileSelect = async (file: File) => {
-    setError(null);
-    setStatus('uploading');
-    setFileName(file.name);
-
-    try {
-      const base64 = await fileToBase64(file);
-      setOriginalImage(base64);
-      setProcessedImage(null);
-      setStatus('idle');
-
-      // Auto-process if service is selected
-      if (selectedService) {
-        await handleProcess(base64, selectedService);
-      }
-    } catch (err: any) {
-      setError('读取文件失败: ' + (err.message || '未知错误'));
-      setStatus('error');
-    }
-  };
-
-  // Handle image processing
-  const handleProcess = async (imageData?: string, serviceId?: string) => {
-    const imgData = imageData || originalImage;
-    const svcId = serviceId || selectedService;
-
-    if (!imgData || !svcId) {
-      setError('请选择处理类型并上传图片');
-      return;
-    }
-
-    setStatus('processing');
-    setError(null);
-    setProcessedImage(null);
-
-    try {
-      const result = await processImage(imgData, svcId);
-
-      if (result.success && result.result) {
-        setProcessedImage(result.result);
-        setStatus('success');
-      } else {
-        throw new Error(result.error || '处理失败');
-      }
-    } catch (err: any) {
-      const errorMessage = err.message || '图片处理失败，请重试';
-      setError(errorMessage);
-      setStatus('error');
-    }
-  };
-
-  // Handle reprocess
-  const handleReprocess = () => {
-    if (originalImage && selectedService) {
-      handleProcess();
-    }
-  };
-
-  // Handle reset
-  const handleReset = () => {
-    setOriginalImage(null);
-    setProcessedImage(null);
-    setFileName('');
-    setStatus('idle');
-    setError(null);
-  };
-
-  // Handle retry on error
-  const handleRetry = () => {
-    if (originalImage && selectedService) {
-      handleProcess();
-    } else {
-      setError(null);
-      setStatus('idle');
-    }
-  };
-
-  // Get selected service info
-  const getSelectedServiceInfo = () => {
-    if (!services || !selectedService) return null;
-
-    for (const category of Object.values(services)) {
-      for (const subcategory of Object.values(category)) {
-        if (Array.isArray(subcategory)) {
-          const service = subcategory.find((s) => s.id === selectedService);
-          if (service) return service;
-        }
-      }
-    }
-    return null;
-  };
-
-  const selectedServiceInfo = getSelectedServiceInfo();
+  const news = [
+    // {
+    //   id: 1,
+    //   title: "实验室团队荣获 CVPR 2024 最佳论文奖提名",
+    //   date: "2024-06-01",
+    //   category: "获奖信息"
+    // },
+    // {
+    //   id: 2,
+    //   title: "与麻省理工学院开展计算机视觉联合研究项目",
+    //   date: "2024-05-28",
+    //   category: "学术活动"
+    // },
+    // {
+    //   id: 3,
+    //   title: "2024年度夏季实习生招聘正式启动",
+    //   date: "2024-05-25",
+    //   category: "实验室新闻"
+    // }
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-base-100">
       {/* Hero Section */}
-      <div className="text-center space-y-4 py-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-base-content">
-          AI 图像处理工具
-        </h1>
-        <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
-          专业的文档处理、智能抠图、去水印服务，让您的图片处理工作更高效
-        </p>
-
-        {serviceHealth === false && (
-          <div className="alert alert-warning shadow-lg max-w-2xl mx-auto">
-            <svg
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <span>无法连接到 AI 服务，请确保后端运行在 http://localhost:5000</span>
+      <section className="relative hero min-h-[60vh] bg-gradient-to-br from-base-200 to-base-300 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
+        <div className="hero-content text-center relative z-10">
+          <div className="max-w-3xl">
+            <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+              智绘-CleanShot
+            </h1>
+            <p className="text-xl mb-8 text-base-content/80">
+              探索视觉技术的无限可能，提供领先的图像修复、增强与生成解决方案。
+            </p>
+            <Link href="/processing" className="btn btn-primary btn-lg shadow-lg hover:scale-105 transition-transform">
+              立即体验
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
           </div>
-        )}
-
-        {serviceHealth && services && (
-          <div className="flex justify-center gap-4 text-sm">
-            <div className="badge badge-primary badge-lg">
-              {Object.values(services.document || {}).flat().length} 文档服务
-            </div>
-            <div className="badge badge-secondary badge-lg">
-              {Object.values(services.matting || {}).flat().length} 抠图服务
-            </div>
-            <div className="badge badge-accent badge-lg">
-              {Object.values(services.watermark || {}).flat().length} 去水印服务
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Sidebar - Service Selection */}
-        <div className="lg:col-span-1 space-y-6">
-          <ServiceSelector
-            services={services}
-            selectedService={selectedService}
-            onServiceSelect={handleServiceSelect}
-            disabled={status === 'processing'}
-          />
-
-          {selectedServiceInfo && (
-            <div className="card bg-primary text-primary-content shadow-xl">
-              <div className="card-body">
-                <h3 className="card-title text-sm">当前选择</h3>
-                <div className="space-y-2">
-                  <p className="font-bold">{selectedServiceInfo.name}</p>
-                  <p className="text-xs opacity-90">{selectedServiceInfo.description}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+      </section>
 
-        {/* Right Content - Upload and Results */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Processing Status */}
-          <ProcessingStatus
-            status={status}
-            error={error}
-            onRetry={handleRetry}
-            serviceName={selectedServiceInfo?.name}
-          />
-
-          {/* Show comparison if we have processed result */}
-          {originalImage && processedImage && status === 'success' ? (
-            <ImageComparison
-              originalImage={originalImage}
-              processedImage={processedImage}
-              fileName={fileName}
-              onReset={handleReset}
-              onReprocess={handleReprocess}
-            />
-          ) : (
-            <>
-              {/* File Upload */}
-              <FileUpload
-                onFileSelect={handleFileSelect}
-                disabled={status === 'processing'}
-                selectedService={selectedService}
-              />
-
-              {/* Preview uploaded image */}
-              {originalImage && !processedImage && status !== 'processing' && (
-                <div className="card bg-base-200 shadow-xl">
-                  <div className="card-body">
-                    <h3 className="card-title">已上传图片</h3>
-                    <div className="rounded-box overflow-hidden bg-base-300 flex items-center justify-center min-h-[300px]">
-                      <img
-                        src={originalImage}
-                        alt="Uploaded"
-                        className="max-w-full max-h-[500px] object-contain"
+      {/* Feature Introduction Section */}
+      <section className="py-20 px-4 bg-base-100">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-16 relative inline-block left-1/2 -translate-x-1/2">
+            样例效果展示
+            <span className="absolute -bottom-4 left-0 w-full h-1 bg-primary rounded-full"></span>
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Feature 1: Intelligent Matting */}
+            <div className="card bg-base-200 shadow-xl overflow-hidden group">
+              <div className="card-body">
+                <h3 className="card-title text-2xl mb-4 text-primary">智能人像/宠物抠图</h3>
+                <p className="mb-6 text-base-content/70">
+                  采用最先进的语义分割网络，精确识别主体轮廓，实现发丝级精细抠图。支持人像、宠物、商品等多种主体。
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <span className="badge badge-outline">处理前</span>
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-base-300">
+                      <Image 
+                        src="/images/demo/pet_original.png" 
+                        alt="Pet Original" 
+                        fill 
+                        className="object-cover"
                       />
                     </div>
-                    <div className="card-actions justify-between items-center mt-4">
-                      <div className="text-sm text-base-content/70">
-                        <span className="font-semibold">{fileName}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={handleReset} className="btn btn-ghost btn-sm">
-                          重新上传
-                        </button>
-                        {selectedService && (
-                          <button
-                            onClick={() => handleProcess()}
-                            className="btn btn-primary btn-sm"
-                          >
-                            开始处理
-                          </button>
-                        )}
-                      </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="badge badge-primary">处理后</span>
+                    <div className="relative aspect-square rounded-lg overflow-hidden alpha-background">
+                      <Image 
+                        src="/images/demo/pet_processed.png" 
+                        alt="Pet Processed" 
+                        fill 
+                        className="object-contain"
+                      />
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Processing Animation */}
-              {status === 'processing' && originalImage && (
-                <div className="card bg-base-200 shadow-xl">
-                  <div className="card-body items-center text-center space-y-6">
-                    <div className="relative">
-                      <div className="rounded-box overflow-hidden bg-base-300 max-w-md">
-                        <img
-                          src={originalImage}
-                          alt="Processing"
-                          className="max-w-full opacity-50 animate-pulse-slow"
-                        />
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-base-100/90 rounded-box p-8 shadow-xl">
-                          <span className="loading loading-spinner loading-lg text-primary"></span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">AI 正在处理您的图片</h3>
-                      <p className="text-base-content/60">
-                        {selectedServiceInfo?.name} - 这可能需要几秒钟...
-                      </p>
-                      <progress className="progress progress-primary w-64 mt-4"></progress>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Features Info */}
-          {!originalImage && selectedService && (
-            <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 shadow-xl border border-primary/20">
-              <div className="card-body">
-                <h3 className="card-title text-primary">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  使用提示
-                </h3>
-                <ul className="space-y-2 text-sm text-base-content/80">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>上传清晰的图片可获得更好的处理效果</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>支持拖拽上传或点击选择文件</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>处理完成后可使用滑块对比查看效果</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>一键下载处理后的高质量图片</span>
-                  </li>
-                </ul>
               </div>
             </div>
-          )}
+
+            {/* Feature 2: Document Optimization */}
+            <div className="card bg-base-200 shadow-xl overflow-hidden group">
+              <div className="card-body">
+                <h3 className="card-title text-2xl mb-4 text-secondary">文档去阴影与增强</h3>
+                <p className="mb-6 text-base-content/70">
+                  针对拍摄文档常见的阴影干扰和光照不均问题，通过深度学习模型重建物体表面光照，还原清晰文档。
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <span className="badge badge-outline">处理前</span>
+                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-base-300">
+                      <Image 
+                        src="/images/demo/shadow_original.jpg" 
+                        alt="Shadow Original" 
+                        fill 
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="badge badge-secondary">处理后</span>
+                    <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-base-300">
+                      <Image 
+                        src="/images/demo/shadow_processed.jpg" 
+                        alt="Shadow Processed" 
+                        fill 
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Results Display Section */}
+      {/* <section className="py-20 px-4 bg-base-200">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-16 relative inline-block left-1/2 -translate-x-1/2">
+            最新研究成果
+            <span className="absolute -bottom-4 left-0 w-full h-1 bg-secondary rounded-full"></span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {latestResults.map((result) => (
+              <div key={result.id} className="card bg-base-100 shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                <div className="card-body">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="card-title text-lg font-bold">{result.title}</h3>
+                    <span className="text-xs text-base-content/50 whitespace-nowrap ml-2">{result.date}</span>
+                  </div>
+                  <p className="text-sm text-base-content/70">{result.description}</p>
+                  <div className="card-actions justify-end mt-4">
+                    <button className="btn btn-sm btn-ghost">了解更多</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section> */}
+
+      {/* Latest News Section */}
+      {/* <section className="py-20 px-4 bg-base-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">实验室动态</h2>
+          
+          <div className="space-y-4">
+            {news.map((item) => (
+              <div key={item.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-lg hover:bg-base-200 transition-colors border-b border-base-200 last:border-0">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className={`badge badge-sm ${
+                      item.category === '获奖信息' ? 'badge-warning' : 
+                      item.category === '学术活动' ? 'badge-info' : 'badge-ghost'
+                    }`}>
+                      {item.category}
+                    </span>
+                    <h3 className="font-medium hover:text-primary cursor-pointer">{item.title}</h3>
+                  </div>
+                </div>
+                <span className="text-sm text-base-content/50 mt-2 md:mt-0">{item.date}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-10">
+            <button className="btn btn-outline">查看更多动态</button>
+          </div>
+        </div>
+      </section> */}
+      {/*主流抠图对比展示*/}
+      <section className="py-20 px-4 bg-base-200">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8 relative inline-block left-1/2 -translate-x-1/2">
+            主流效果对比
+            <span className="absolute -bottom-4 left-0 w-full h-1 bg-accent rounded-full"></span>
+          </h2>
+          <p className="text-center text-base-content/70 mb-12 max-w-2xl mx-auto">
+            我们与业界主流产品进行了深度对比，智绘-CleanShot在细节保留和边缘处理上表现优异。
+          </p>
+          
+          <CompetitorComparison />
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-primary text-primary-content">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">准备好体验最新的AI图像处理技术了吗？</h2>
+          <p className="text-lg mb-8 opacity-90">立即上传您的图片，感受智能科技带来的便捷。</p>
+          <Link href="/processing" className="btn btn-lg bg-white text-primary hover:bg-gray-100 border-none">
+            开始使用
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
