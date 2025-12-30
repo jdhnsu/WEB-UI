@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ThemeToggle from '@/components/ThemeToggle';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '智绘-CleanShot',
   description: 'AI-powered document processing, matting, and watermark removal service',
+  icons: {
+    icon: '/images/demo/icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -20,11 +24,16 @@ export default function RootLayout({
           <header className="navbar bg-base-200 shadow-lg">
             <div className="container mx-auto">
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-base-content">
+                <Link href="/" className="btn btn-ghost normal-case text-xl">
                   智绘-CleanShot
-                </h1>
+                </Link>
               </div>
-              <div className="flex-none">
+              <div className="flex-none gap-2">
+                <ul className="menu menu-horizontal px-1">
+                  <li><Link href="/">首页</Link></li>
+                  <li><Link href="/processing">处理</Link></li>
+                  <li><Link href="/report">性能报告</Link></li>
+                </ul>
                 <ThemeToggle />
               </div>
             </div>

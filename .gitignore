@@ -10,7 +10,7 @@ node_modules/
 out/
 build/
 dist/
-test/
+text/
 
 # Environment variables
 .env
